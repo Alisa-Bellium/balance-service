@@ -1,0 +1,36 @@
+version: "3.9"
+
+volumes:
+  app_db_data:
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: app.Dockerfile
+    restart: unless-stopped
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_DATABASE: ${DB_DATABASE}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - ./data:/app/src/data
+    ports:
+      - "8080:8080"
+    depends_on:
+      - app_db
+
+  app_db:
+    image: postgres:latest
+    command: -p ${DB_PORT}
+    restart: unless-stopped
+    volumes:
+      - app_db_data:/var/lib/postgresql/data:rw
+    environment:
+      POSTGRES_DB: ${DB_USERNAME}
+      POSTGRES_USER: ${DB_DATABASE}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "${DB_PORT}:${DB_PORT}"
